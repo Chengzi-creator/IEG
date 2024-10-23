@@ -21,6 +21,7 @@ public class PlayerControl : MonoBehaviour
     public bool isGrounded = false;
     public bool isJumping = false;
     public bool landed = false;
+    public bool LockJump = true;
     public float coyoteTime = 0.1f;
     public float coyoteTimeCounter = 0f;
     public bool touchLeftWall;//角色是否触碰左墙
@@ -115,16 +116,17 @@ public class PlayerControl : MonoBehaviour
     private void Update()
     {
         moveInput = player.KeyBoard.Move.ReadValue<Vector2>();
-        Debug.Log(moveInput);
-        mousePos = camera.ScreenToWorldPoint(Input.mousePosition);
+        //Debug.Log(moveInput);
+        //mousePos = camera.ScreenToWorldPoint(Input.mousePosition);
         //fireDirection = mousePos - (Vector2)transform.position;
         
         //Debug.Log("Check");
         Check();
-        attackRateCounter += Time.deltaTime;
+        //attackRateCounter += Time.deltaTime;
         //currentHealth = character.currentHealth;
         Dead();
         Stick();
+        
         if (isInvincible)
         {
             transform.position = originalPosition;
@@ -136,7 +138,14 @@ public class PlayerControl : MonoBehaviour
         Move();
         CheckGround();
         Fall();
-        
+        if (!LockJump)
+        {
+            if (isJumping)
+            {
+                JumpTwice();
+            }
+        }
+
         Stick();
         if (isSticking)
         {
@@ -315,15 +324,28 @@ public class PlayerControl : MonoBehaviour
 
     #region 角色跳跃
     private void Jump(InputAction.CallbackContext ctx)
-    {
+    {   
+        Debug.Log("Jump");
         if (landed && (isGrounded || coyoteTimeCounter > 0))
         {
             rb.AddForce(Vector2.up * jumpForce, ForceMode2D.Impulse);
             coyoteTimeCounter = 0;
             isJumping = true;
+            anim.SetBool("isJumping",true);
+            anim.SetTrigger("Jump");
             landed = false;
         }
     }
+
+    private void JumpTwice()
+    {
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            rb.AddForce(Vector2.up * jumpForce, ForceMode2D.Impulse);
+            coyoteTimeCounter = 0;
+        }
+    }
+
 
     private void Fall()
     {
@@ -332,24 +354,24 @@ public class PlayerControl : MonoBehaviour
             if (rb.velocity.y < 0)
             {
                 rb.AddForce(Vector2.down * jumpForce, ForceMode2D.Force);
+                anim.SetBool("isJumping",false);
+                anim.SetBool("isFalling",true);
             }
         }
     }
 
     public void CheckGround()
     {
-        bool wasGrounded = isGrounded;
         isGrounded = Physics2D.OverlapCircle(transform.position - new Vector3(0, 0.4f, 0), 0.05f, LayerMask.GetMask("Ground")) ||
                      Physics2D.OverlapCircle(transform.position - new Vector3(0, 0.4f, 0), 0.05f, LayerMask.GetMask("Obstacle"));
-
-        if (!wasGrounded && isGrounded)
-        {
-            landed = true;
-        }
+        
         if (isGrounded)
         {
             coyoteTimeCounter = coyoteTime;
             isJumping = false;
+            anim.SetBool("isFalling", false);
+            landed = true;
+            //Debug.Log("land");
         }
         else
         {
@@ -365,7 +387,6 @@ public class PlayerControl : MonoBehaviour
         //Debug.Log("Check");
         
         touchLeftWall = Physics2D.OverlapCircle((Vector2)transform.position + leftOffset, checkRaduis, groundLayer);
-
         touchRightWall = Physics2D.OverlapCircle((Vector2)transform.position + rightOffset, checkRaduis, groundLayer);
     }
 
@@ -448,4 +469,26 @@ public class PlayerControl : MonoBehaviour
         }
     }
     #endregion
+
+    #region 角色交互
+
+    private void OnTriggerEnter2D(Collider2D other)
+    {
+        if (other.CompareTag("NPC"))
+        {
+            
+        }
+    }
+    
+    private void OnTriggerExit2D(Collider2D other)
+    {
+        if (other.CompareTag("NPC"))
+        {
+           
+        }
+    }
+
+
+    #endregion
 }
+ 

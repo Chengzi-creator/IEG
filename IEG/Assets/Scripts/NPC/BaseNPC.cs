@@ -16,6 +16,12 @@ public class BaseNPC : MonoBehaviour
     public bool isMissionActive = false;//任务激活
     public bool isMissionCompleted = false;  //任务完成
 
+    private void Start()
+    {
+        
+    }
+
+
     //获取当前对话
     public string[] GetCurrentDialogue()
     {
