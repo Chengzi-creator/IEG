@@ -1,21 +1,20 @@
-﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 
-public class TalkText : MonoBehaviour
+public class AttackText : MonoBehaviour
 {
-    public static TalkText instance;
+   public static AttackText instance;
 
-    public static TalkText Instance
+    public static AttackText Instance
     {
         get
         {
             if (instance == null)
             {
-                instance = GameObject.FindAnyObjectByType<TalkText>();
+                instance = GameObject.FindAnyObjectByType<AttackText>();
             }
             return instance;
         }
@@ -26,16 +25,16 @@ public class TalkText : MonoBehaviour
     
     [Header("对话更新")]
     public bool isMissionActive = false;
+    public bool isMissionCompleted = false;
     public int talkConut = 0;//用来存储对话次数？
     private PlayerControl playerControl;
     
     [Header("对话显示")]
     private Queue<string> dialogueQueue; //存储对话
     private bool isTyping = false;  //判断是否正在显示
-    private Coroutine typingCoroutine;
-
-    public int Count = 0;
+    private Coroutine typingCoroutine; 
     
+
     private void Awake()
     {
         //playerControl = GetComponent<PlayerControl>();
@@ -51,11 +50,7 @@ public class TalkText : MonoBehaviour
         {
             StartDialogue(new List<string>
             {
-                "你来了?看来你已经不记得了——这原本是你的一部分.",
-                "跳跃,不是为了逃离,而是为了超越.",
-                "你需要再学会这项能力.不过,在此之前,你得帮我完成一件事.",
-                "去那边的断路.那里有一些光芒,它们像是我们曾经的希望.收集它们.或许这次你能跳得更高.",
-                "(沉默片刻)但是...跳的再高又有什么意义呢."
+                
             });
         }
 
@@ -63,13 +58,14 @@ public class TalkText : MonoBehaviour
         {
             StartDialogue(new List<string>
             {
-                "很好,你做到了.曾经的希望又回到了你的身上.",
-                "但还是希望你不要忘了,飞得更高,也意味着跌得更重.",
-                "希望你能做出正确的选择...",
-                "再见.愿你在后面的路上,找到自己真正想要的."
+                "","",""
             });
         }
-        
+
+        if (talkConut == 2)
+        {
+            
+        }
     }
     
 
@@ -93,9 +89,9 @@ public class TalkText : MonoBehaviour
             DisplayNextSentence();
         }
 
-        if (Count == 2)
+        if (isMissionCompleted)
         {
-            talkConut = 1;
+            
         }
     }
 
@@ -140,12 +136,13 @@ public class TalkText : MonoBehaviour
         
         if (talkConut == 0)
         {
-            isMissionActive = true;//暂时不知道这个的意义是
+            isMissionActive = true;
+            PlayerControl.Instance.powerCount++;
         }
         
         if (talkConut == 1)
         {
-            PlayerControl.Instance.powerCount++;
+            
         }
     }
 }

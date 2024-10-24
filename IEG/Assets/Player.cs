@@ -44,6 +44,15 @@ public partial class @Player: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Attack"",
+                    ""type"": ""Button"",
+                    ""id"": ""cd7aecc0-2405-45c7-9c6a-f0ecd2629bac"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -112,6 +121,17 @@ public partial class @Player: IInputActionCollection2, IDisposable
                     ""action"": ""Jump"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""7924e6b9-513b-4020-83be-909efe6c3b7a"",
+                    ""path"": ""<Mouse>/leftButton"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Attack"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -122,6 +142,7 @@ public partial class @Player: IInputActionCollection2, IDisposable
         m_KeyBoard = asset.FindActionMap("KeyBoard", throwIfNotFound: true);
         m_KeyBoard_Move = m_KeyBoard.FindAction("Move", throwIfNotFound: true);
         m_KeyBoard_Jump = m_KeyBoard.FindAction("Jump", throwIfNotFound: true);
+        m_KeyBoard_Attack = m_KeyBoard.FindAction("Attack", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -185,12 +206,14 @@ public partial class @Player: IInputActionCollection2, IDisposable
     private List<IKeyBoardActions> m_KeyBoardActionsCallbackInterfaces = new List<IKeyBoardActions>();
     private readonly InputAction m_KeyBoard_Move;
     private readonly InputAction m_KeyBoard_Jump;
+    private readonly InputAction m_KeyBoard_Attack;
     public struct KeyBoardActions
     {
         private @Player m_Wrapper;
         public KeyBoardActions(@Player wrapper) { m_Wrapper = wrapper; }
         public InputAction @Move => m_Wrapper.m_KeyBoard_Move;
         public InputAction @Jump => m_Wrapper.m_KeyBoard_Jump;
+        public InputAction @Attack => m_Wrapper.m_KeyBoard_Attack;
         public InputActionMap Get() { return m_Wrapper.m_KeyBoard; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -206,6 +229,9 @@ public partial class @Player: IInputActionCollection2, IDisposable
             @Jump.started += instance.OnJump;
             @Jump.performed += instance.OnJump;
             @Jump.canceled += instance.OnJump;
+            @Attack.started += instance.OnAttack;
+            @Attack.performed += instance.OnAttack;
+            @Attack.canceled += instance.OnAttack;
         }
 
         private void UnregisterCallbacks(IKeyBoardActions instance)
@@ -216,6 +242,9 @@ public partial class @Player: IInputActionCollection2, IDisposable
             @Jump.started -= instance.OnJump;
             @Jump.performed -= instance.OnJump;
             @Jump.canceled -= instance.OnJump;
+            @Attack.started -= instance.OnAttack;
+            @Attack.performed -= instance.OnAttack;
+            @Attack.canceled -= instance.OnAttack;
         }
 
         public void RemoveCallbacks(IKeyBoardActions instance)
@@ -237,5 +266,6 @@ public partial class @Player: IInputActionCollection2, IDisposable
     {
         void OnMove(InputAction.CallbackContext context);
         void OnJump(InputAction.CallbackContext context);
+        void OnAttack(InputAction.CallbackContext context);
     }
 }

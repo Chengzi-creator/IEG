@@ -28,10 +28,15 @@ public class BaseNPC : MonoBehaviour
         playerControl = GetComponent<PlayerControl>();
     }
 
+    private void Update()
+    {
+        
+    }
+
     private void OnTriggerStay2D(Collider2D other)
     {   
         //Debug.Log("Enter");
-        if (Input.GetKeyDown(KeyCode.E))
+        if (Keyboard.current.eKey.wasPressedThisFrame && other.CompareTag("Player"))
         {     
             Debug.Log("Start");
             talkText.SetActive(true);
@@ -40,7 +45,7 @@ public class BaseNPC : MonoBehaviour
     
     private void OnTriggerExit2D(Collider2D other)
     {
-        talkText.SetActive(false);
+        //talkText.SetActive(false);
     }
 
 

@@ -36,6 +36,7 @@ public class PlayerControl : MonoBehaviour
     public bool isJumping = false;
     public bool landed = false;
     public bool LockJump = true;
+    public bool Twice = false;
     public float coyoteTime = 0.1f;
     public float coyoteTimeCounter = 0f;
     public bool touchLeftWall;//角色是否触碰左墙
@@ -45,6 +46,7 @@ public class PlayerControl : MonoBehaviour
     private Vector3 originalPosition;
     private bool isInvincible = false;
     public float currentHealth;
+    
 
     [Header("检测参数")]
     public Vector2 leftOffset;//左方检测
@@ -54,20 +56,10 @@ public class PlayerControl : MonoBehaviour
     [HideInInspector]public Character character;
     //private string currentSceneName;
 
-    [Header("角色攻击")]
-    public GameObject meleePrefab;
-    private PolygonCollider2D meleeCollider;
-    public GameObject lungePrefab;
-    private PolygonCollider2D lungeCollider;
-    public GameObject slashPrefab;
-    private PolygonCollider2D slashCollider;
-    public GameObject bulletPrefab;
-    public Transform bulletSpawnPoint;
-    public bool canShoot = false;
+    [Header("角色攻击")]//不用预制体，直接对前方造成伤害
     public int attackForm = 0;
-    private float attackRate = 0.2f;
-    private float attackRateCounter = 0f;
-    private Vector2 fireDirection = Vector2.zero;
+    public float attackRate = 0.2f;
+    public float attackRateCounter = 0f;
     private Vector2 mousePos;
     private Camera camera;
     
@@ -98,23 +90,11 @@ public class PlayerControl : MonoBehaviour
         //     //Destroy(gameObject);
         // }
         
-        // 获取射击点
-        //bulletSpawnPoint = transform.Find("Shoot");
-
-        // 获取近战碰撞体
-        //meleeCollider = meleePrefab.GetComponent<PolygonCollider2D>();
-
-        // 获取冲刺碰撞体
-        //lungeCollider = lungePrefab.GetComponent<PolygonCollider2D>();
-
-        // 获取斩击碰撞体
-        //slashCollider = slashPrefab.GetComponent<PolygonCollider2D>();
-
         // 触发跳跃
         player.KeyBoard.Jump.started += Jump;
 
         // 触发射击
-        //playerInput.Player.Attack.started += Attack;
+        player.KeyBoard.Attack.started += Attack;
     }
 
     private void OnEnable()
@@ -137,18 +117,35 @@ public class PlayerControl : MonoBehaviour
         moveInput = player.KeyBoard.Move.ReadValue<Vector2>();
         //Debug.Log(moveInput);
         //mousePos = camera.ScreenToWorldPoint(Input.mousePosition);
-        //fireDirection = mousePos - (Vector2)transform.position;
         
         //Debug.Log("Check");
-        Check();
-        //attackRateCounter += Time.deltaTime;
+       
+        attackRateCounter += Time.deltaTime;
         //currentHealth = character.currentHealth;
         Dead();
-        Stick();
-        
+
+        if (powerCount >= 2)
+        {
+            Stick();
+            Check();
+            if (isSticking)
+            {
+                StickMovement(); // 在贴墙状态下进行特殊移动
+            }
+        }
+
         if (isInvincible)
         {
             transform.position = originalPosition;
+        }
+        
+        if (powerCount >= 1)
+        {
+            if (!isGrounded && !Twice)
+            {
+                JumpTwice();
+                //Debug.Log("twice");
+            }
         }
     }
 
@@ -157,52 +154,9 @@ public class PlayerControl : MonoBehaviour
         Move();
         CheckGround();
         Fall();
-        // if (!LockJump)
-        // {
-        //     if (isJumping)
-        //     {
-        //         JumpTwice();
-        //     }
-        // }
-
-        Stick();
-        if (isSticking)
-        {
-            StickMovement(); // 在贴墙状态下进行特殊移动
-        }
     }
 
     #region 角色攻击
-    public void AbsorbEssence(string form)
-    {
-        switch (form)
-        {
-            case "Shoot":
-                canShoot = true;
-                break;
-            case "Melee":
-                canShoot = false;
-                break;
-            default:
-                break;
-        }
-    }
-    public void AbsorbAnim()
-    {
-        anim.SetTrigger("absorb");
-        originalPosition = transform.position;
-        StartCoroutine(Invincible());
-    }
-
-    public void LevelUp()
-    {
-        attackForm++;
-        if (attackForm > 2)
-        {
-            attackForm = 2;
-        }
-    }
-
     IEnumerator Invincible()
     {
         isInvincible = true;
@@ -212,31 +166,11 @@ public class PlayerControl : MonoBehaviour
 
     private void Attack(InputAction.CallbackContext ctx)
     {
-        if (CanAttack())
+        if (CanAttack() && powerCount >= 3)
         {
-            if (canShoot)
-            {
-                Shoot();
-            }
-            else
-            {
-                switch (attackForm)
-                {
-                    case 0:
-                        Melee();
-                        break;
-                    case 1:
-                        Lunge();
-                        break;
-                    case 2:
-                        Slash();
-                        break;
-                    default:
-                        break;
-                }
-            }
+           Slash();
         }
-     }
+    }
 
     private bool CanAttack()
     {
@@ -251,54 +185,18 @@ public class PlayerControl : MonoBehaviour
         }
     }
 
-    private void Shoot()
-    {
-        //GameObject bullet = ObjectPool.Instance.GetObject(bulletPrefab);
-        //bullet.transform.position = bulletSpawnPoint.position;
-        //anim.SetTrigger("isShoot");
-        //bullet.GetComponent<Bullet>().SetSpeed(fireDirection);
-    }
-
-    private void Melee()
-    {
-        meleeCollider.enabled = true;
-        anim.SetBool("isMelee", true);
-        StartCoroutine(DisableMeleeCollider());
-    }
-
-    IEnumerator DisableMeleeCollider()
-    {
-        yield return new WaitForSeconds(0.2f);
-        meleeCollider.enabled = false;
-        anim.SetBool("isMelee", false);
-    }
-
-    private void Lunge()
-    {
-        lungeCollider.enabled = true;
-        anim.SetBool("isLunge", true);
-        StartCoroutine(DisableLungeCollider());
-    }
-
-    IEnumerator DisableLungeCollider()
-    {
-        yield return new WaitForSeconds(0.2f);
-        lungeCollider.enabled = false;
-        anim.SetBool("isLunge", false);
-    }
-
+    
     private void Slash()
     {
-        slashCollider.enabled = true;
-        anim.SetBool("isSlash", true);
+        anim.SetTrigger("Attack");
+        Debug.Log("Attack");
+        //对前方方形区域造成伤害
         StartCoroutine(DisableSlashCollider());
     }
 
     IEnumerator DisableSlashCollider()
     {
         yield return new WaitForSeconds(0.2f);
-        slashCollider.enabled = false;
-        anim.SetBool("isSlash", false);
     }
     #endregion
 
@@ -344,24 +242,24 @@ public class PlayerControl : MonoBehaviour
     #region 角色跳跃
     private void Jump(InputAction.CallbackContext ctx)
     {   
-        Debug.Log("Jump");
+        //Debug.Log("Jump");
         if (landed && (isGrounded || coyoteTimeCounter > 0))
         {
             rb.AddForce(Vector2.up * jumpForce, ForceMode2D.Impulse);
             coyoteTimeCounter = 0;
             isJumping = true;
-            anim.SetBool("isJumping",true);
             anim.SetTrigger("Jump");
             landed = false;
         }
     }
 
     private void JumpTwice()
-    {
+    {   
         if (Input.GetKeyDown(KeyCode.Space))
         {
-            rb.AddForce(Vector2.up * jumpForce, ForceMode2D.Impulse);
+            rb.AddForce(Vector2.up * (jumpForce - 3.5f), ForceMode2D.Impulse);
             coyoteTimeCounter = 0;
+            Twice = true;
         }
     }
 
@@ -373,7 +271,6 @@ public class PlayerControl : MonoBehaviour
             if (rb.velocity.y < 0)
             {
                 rb.AddForce(Vector2.down * jumpForce, ForceMode2D.Force);
-                anim.SetBool("isJumping",false);
                 anim.SetBool("isFalling",true);
             }
         }
@@ -381,8 +278,8 @@ public class PlayerControl : MonoBehaviour
 
     public void CheckGround()
     {
-        isGrounded = Physics2D.OverlapCircle(transform.position - new Vector3(0, 0.4f, 0), 0.05f, LayerMask.GetMask("Ground")) ||
-                     Physics2D.OverlapCircle(transform.position - new Vector3(0, 0.4f, 0), 0.05f, LayerMask.GetMask("Obstacle"));
+        isGrounded = Physics2D.OverlapCircle(transform.position - new Vector3(0, 0.1f, 0), 0.05f,
+            LayerMask.GetMask("Ground"));
         
         if (isGrounded)
         {
@@ -390,6 +287,7 @@ public class PlayerControl : MonoBehaviour
             isJumping = false;
             anim.SetBool("isFalling", false);
             landed = true;
+            Twice = false;
             //Debug.Log("land");
         }
         else
@@ -422,25 +320,28 @@ public class PlayerControl : MonoBehaviour
         if (touchLeftWall)
         {
             //Debug.Log("贴墙了");
-            if (Input.GetKeyDown(KeyCode.E))
+            if (Input.GetKeyDown(KeyCode.Q))
             {
                 isSticking = true;//进入贴墙状态，可以添加动画？
+                anim.SetBool("isSticking",true);
                 rb.velocity = Vector2.zero;//停止角色的所有移动
                 Debug.Log("进入了");
             }
         }
         if (touchRightWall)
         {
-            if (Input.GetKeyDown(KeyCode.E))
+            if (Input.GetKeyDown(KeyCode.Q))
             {
                 Debug.Log("右墙");
                 isSticking = true;//进入贴墙状态，可以添加动画？
+                anim.SetBool("isSticking",true);
                 rb.velocity = Vector2.zero;//停止角色的所有移动，可能需要加上localscale的变化
             }
         }
         if (isSticking && Input.GetKeyDown(KeyCode.Space))
         {
             isSticking = false;//通过跳跃键退出贴墙状态，可添加动画
+            anim.SetBool("isSticking",false);
         }
     }
 
@@ -483,8 +384,7 @@ public class PlayerControl : MonoBehaviour
     {
         if(currentHealth == 0f)
         {   
-            //ObjectPool.Instance.Clear(); // 初始化对象池
-            //SceneManager.LoadScene(currentSceneName);
+           //似乎没来得及加死亡时的效果
         }
     }
     #endregion
