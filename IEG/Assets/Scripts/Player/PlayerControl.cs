@@ -5,9 +5,23 @@ using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
+using TMPro;
 
 public class PlayerControl : MonoBehaviour
 {
+    public static PlayerControl instance;
+    public static PlayerControl Instance
+    {
+        get
+        {
+            if (instance == null)
+            {
+                instance = GameObject.FindAnyObjectByType<PlayerControl>();
+            }
+            return instance;
+        }
+    }
+    
     [Header("角色属性")]
     public float speed = 200f;
     public float jumpForce = 70f;
@@ -56,7 +70,12 @@ public class PlayerControl : MonoBehaviour
     private Vector2 fireDirection = Vector2.zero;
     private Vector2 mousePos;
     private Camera camera;
-    private static Player instance;//试图保留角色数据
+    
+    [Header("角色交互")]
+    public TextMeshProUGUI dialogueText;  //显示对话内容的 UI
+    private TalkText currentTalkText;  //当前交互的 NPC的文本
+    private bool isInRange = false; //玩家是否在交互范围内
+    public int powerCount = 0;
     
     private void Awake()
     {
@@ -72,11 +91,11 @@ public class PlayerControl : MonoBehaviour
         // if (instance == null)
         // {
         //     instance = this;
-        //     DontDestroyOnLoad(gameObject);//切换关卡血量经验不变
+        //     //DontDestroyOnLoad(gameObject);//切换关卡血量经验不变
         // }
         // else
         // {
-        //     Destroy(gameObject);
+        //     //Destroy(gameObject);
         // }
         
         // 获取射击点
@@ -138,13 +157,13 @@ public class PlayerControl : MonoBehaviour
         Move();
         CheckGround();
         Fall();
-        if (!LockJump)
-        {
-            if (isJumping)
-            {
-                JumpTwice();
-            }
-        }
+        // if (!LockJump)
+        // {
+        //     if (isJumping)
+        //     {
+        //         JumpTwice();
+        //     }
+        // }
 
         Stick();
         if (isSticking)

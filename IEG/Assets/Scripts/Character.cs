@@ -21,12 +21,12 @@ public class Character : MonoBehaviour
     public float invulnerableCounter;
     public bool invulnerable;
 
-    public UnityEvent<Transform> OnTakeDamage;//直接调用
-    public UnityEvent OnDie;//直接调用
+    public UnityEvent<Transform> OnTakeDamage;
+    public UnityEvent OnDie;
     
     void Awake()
     {
-        currentHealth = maxHealth; //设置生命值
+        currentHealth = maxHealth; //设置hp
         anim = GetComponent<Animator>();
     }
     
@@ -55,7 +55,6 @@ public class Character : MonoBehaviour
             Hurt = true;
             TriggerInvulnerable();
             //执行受伤
-            
         }
         else
         {
