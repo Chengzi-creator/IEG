@@ -1,20 +1,20 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
 using TMPro;
+using UnityEngine.UI;
 
-public class AttackText : MonoBehaviour
+public class BoardText : MonoBehaviour
 {
-   public static AttackText instance;
+    public static BoardText instance;
 
-    public static AttackText Instance
+    public static BoardText Instance
     {
         get
         {
             if (instance == null)
             {
-                instance = GameObject.FindAnyObjectByType<AttackText>();
+                instance = GameObject.FindAnyObjectByType<BoardText>();
             }
             return instance;
         }
@@ -23,26 +23,22 @@ public class AttackText : MonoBehaviour
     [SerializeField] private TextMeshProUGUI dialogueText;
     [SerializeField] private Button nextButton;
     
-    [Header("对话更新")]
-    public bool isMissionActive = false;
-    public int talkConut = 0;//用来存储对话次数,似乎这个没有第二对话
-    private PlayerControl playerControl;
     
     [Header("对话显示")]
     private Queue<string> dialogueQueue; //存储对话
     private bool isTyping = false;  //判断是否正在显示
-    private Coroutine typingCoroutine; 
+    private Coroutine typingCoroutine;
     
-
     private void Awake()
     {
+        
         if (instance == null)
         {
             instance = this;
         }
         else if (instance != this)
         {
-            Destroy(gameObject); // 防止重复实例
+            Destroy(gameObject);
         }
     }
 
@@ -53,22 +49,23 @@ public class AttackText : MonoBehaviour
         nextButton.gameObject.SetActive(false);
     }
     
+    
     public void LoadDialogue()
     {
-        switch (talkConut)
+        switch (0)
         {
             case 0:
                 StartDialogue(new List<string>
                 {
-                    "哦,你来得正是时候.我要提前把你的攻击能力还给你.",
-                    "但是...用它之前,你必须想清楚:你真的需要它吗?",
-                    "你不必现在回答我,但我会在你前进的路上考验你.如果你使用到了,就意味着你接受了它.",
-                    "不过,我要提醒你——暴力是一种诅咒,它会慢慢吞噬你.",
-                    "现在出发吧!这是你的试炼,做出你的选择.",
-                    "(按左键可以进行快速斩击了!)"
+                   "正如你所做的一样,你所拥有的能力可以被用于探索未知.",
+                   "欣赏沿路的风景,在适时的地方停驻下来.",
+                   "但并不是所有能力拥有了就一定要去使用它,",
+                   "如果必须使用的话,我想还是不曾拥有的好.",
+                   "你问我怎么避免使用这个能力?",
+                   "我想...总是会有其他的路可以走的吧."
                 });
                 break;
-
+            
             default:
                 //Debug.Log("没有更多的对话。");
                 break;
@@ -94,7 +91,6 @@ public class AttackText : MonoBehaviour
         {
             DisplayNextSentence();
         }
-        
     }
 
 
@@ -134,13 +130,5 @@ public class AttackText : MonoBehaviour
     {
         dialogueText.text = "";
         nextButton.gameObject.SetActive(false);
-        gameObject.SetActive(false);
-
-        if (talkConut == 0)
-        {
-            //isMissionActive = true;
-            PlayerControl.Instance.powerCount++;
-            Destroy(gameObject);
-        }
     }
 }

@@ -20,9 +20,6 @@ public class Character : MonoBehaviour
     public float invulnerableDuration;
     public float invulnerableCounter;
     public bool invulnerable;
-
-    public UnityEvent<Transform> OnTakeDamage;
-    public UnityEvent OnDie;
     
     void Awake()
     {
@@ -54,14 +51,11 @@ public class Character : MonoBehaviour
             anim.SetTrigger("Hurt");
             Hurt = true;
             TriggerInvulnerable();
-            //执行受伤
         }
         else
         {
             currentHealth = 0;
-            //触发死亡
             anim.SetBool("Dead",true);
-            OnDie?.Invoke();
         }
     }
 

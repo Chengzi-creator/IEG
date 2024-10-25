@@ -1,14 +1,14 @@
-﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.InputSystem;
 
-public class Collections : MonoBehaviour
+public class Box : MonoBehaviour
 {
-    public TalkText talkText;
+    public ClimbText climbTextText;
     
     private void Update()
     {
-        talkText = FindObjectOfType<TalkText>();
+        climbTextText = FindObjectOfType<ClimbText>();
     }
 
     private void OnTriggerEnter2D(Collider2D other)
@@ -16,7 +16,7 @@ public class Collections : MonoBehaviour
         if (other.CompareTag("Player"))
         {   
             Debug.Log("get");
-            talkText.Count += 1;
+            climbTextText.talkConut += 1;
             Destroy(gameObject);
         }
     }

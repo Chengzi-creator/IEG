@@ -38,40 +38,55 @@ public class TalkText : MonoBehaviour
     
     private void Awake()
     {
-        //playerControl = GetComponent<PlayerControl>();
+        if (instance == null)
+        {
+            instance = this;
+        }
+        else if (instance != this)
+        {
+            Destroy(gameObject);
+        }
     }
 
     void Start()
     {
         dialogueQueue = new Queue<string>();
-        nextButton.onClick.AddListener(DisplayNextSentence); //显示下一句
+        nextButton.onClick.AddListener(DisplayNextSentence);//显示下一句
         nextButton.gameObject.SetActive(false);
-
-        if (talkConut == 0)
-        {
-            StartDialogue(new List<string>
-            {
-                "你来了?看来你已经不记得了——这原本是你的一部分.",
-                "跳跃,不是为了逃离,而是为了超越.",
-                "你需要再学会这项能力.不过,在此之前,你得帮我完成一件事.",
-                "去那边的断路.那里有一些光芒,它们像是我们曾经的希望.收集它们.或许这次你能跳得更高.",
-                "(沉默片刻)但是...跳的再高又有什么意义呢."
-            });
-        }
-
-        if (talkConut == 1)
-        {
-            StartDialogue(new List<string>
-            {
-                "很好,你做到了.曾经的希望又回到了你的身上.",
-                "但还是希望你不要忘了,飞得更高,也意味着跌得更重.",
-                "希望你能做出正确的选择...",
-                "再见.愿你在后面的路上,找到自己真正想要的."
-            });
-        }
-        
     }
     
+    public void LoadDialogue()
+    {
+        switch (talkConut)
+        {
+            case 0:
+                StartDialogue(new List<string>
+                {
+                    "你来了?看来你已经不记得了——这原本是你的一部分.",
+                    "跳跃,不是为了逃离,而是为了超越.",
+                    "你需要再学会这项能力.不过,在此之前,你得帮我完成一件事.",
+                    "去那边的断路.那里有一些蓝光,它们像是我们曾经的希望.收集它们.或许这次你能跳得更高.",
+                    "记得收集完了再来找我,我还有话想跟你说.",
+                    "(沉默片刻)但是...跳的再高又有什么意义呢."
+                });
+                break;
+
+            case 1:
+                StartDialogue(new List<string>
+                {
+                    "很好,你做到了.曾经的希望又回到了你的身上.",
+                    "但还是希望你不要忘了,飞得更高,也意味着跌得更重.",
+                    "希望你能做出正确的选择...",
+                    "再见.愿你在后面的路上,找到自己真正想要的.",
+                    "(现在你可以进行二段跳了)"
+                });
+                break;
+
+            default:
+                //Debug.Log("没有更多的对话。");
+                break;
+        }
+    }
 
     //初始化,存储对话内容
     public void StartDialogue(List<string> dialogue)
@@ -136,7 +151,7 @@ public class TalkText : MonoBehaviour
     {
         dialogueText.text = "";
         nextButton.gameObject.SetActive(false);
-        gameObject.SetActive(false);
+        //gameObject.SetActive(false);
         
         if (talkConut == 0)
         {
@@ -146,6 +161,7 @@ public class TalkText : MonoBehaviour
         if (talkConut == 1)
         {
             PlayerControl.Instance.powerCount++;
+            gameObject.SetActive(false);
         }
     }
 }

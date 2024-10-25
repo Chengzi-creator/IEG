@@ -7,6 +7,7 @@ public class Pause : MonoBehaviour
 {
     [SerializeField] private GameObject PauseMasks;
     [SerializeField] private GameObject SetupMasks;
+    [SerializeField] private GameObject introduceMasks;
     [SerializeField] private Button exitButton;
     [SerializeField] private Button backButton;
     [SerializeField] private Button setupButton;
@@ -17,6 +18,7 @@ public class Pause : MonoBehaviour
     {
         PauseMasks.SetActive(false); //先隐藏
         SetupMasks.SetActive(false);
+        introduceMasks.SetActive(true);
         exitButton.onClick.AddListener(OnexitButtonClick); //监听
         setupButton.onClick.AddListener(OnsetupButtonClick);
         backButton.onClick.AddListener(OnbackButtonClick);
@@ -29,7 +31,14 @@ public class Pause : MonoBehaviour
         //检测是否按下ESC
         if (Input.GetKeyDown(KeyCode.Escape))
         {
-            TogglePause();
+            if (introduceMasks.activeSelf)
+            {
+                introduceMasks.SetActive(false);
+            }
+            else
+            {
+                TogglePause();
+            }
         }
     }
 
@@ -106,5 +115,4 @@ public class Pause : MonoBehaviour
         //恢复游戏时间
         Time.timeScale = 1f;
     }
-
 }

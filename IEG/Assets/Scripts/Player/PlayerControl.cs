@@ -6,6 +6,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 using TMPro;
+using UnityEngine.SceneManagement;
 
 public class PlayerControl : MonoBehaviour
 {
@@ -64,10 +65,10 @@ public class PlayerControl : MonoBehaviour
     private Camera camera;
     
     [Header("角色交互")]
-    public TextMeshProUGUI dialogueText;  //显示对话内容的 UI
-    private TalkText currentTalkText;  //当前交互的 NPC的文本
+    //public TextMeshProUGUI dialogueText;  //显示对话内容的 UI
+    //private TalkText currentTalkText;  //当前交互的 NPC的文本
     private bool isInRange = false; //玩家是否在交互范围内
-    public int powerCount = 0;
+    public int powerCount = 3;
     
     private void Awake()
     {
@@ -121,7 +122,7 @@ public class PlayerControl : MonoBehaviour
         //Debug.Log("Check");
        
         attackRateCounter += Time.deltaTime;
-        //currentHealth = character.currentHealth;
+        currentHealth = character.currentHealth;
         Dead();
 
         if (powerCount >= 2)
@@ -189,9 +190,34 @@ public class PlayerControl : MonoBehaviour
     private void Slash()
     {
         anim.SetTrigger("Attack");
-        Debug.Log("Attack");
+        //Debug.Log("Attack");
+        
         //对前方方形区域造成伤害
+        Vector2 attackPosition = (Vector2)transform.position + (Vector2.right * transform.localScale.x * 1.5f);
+        Vector2 attackSize = new Vector2(1.5f, 1.5f);
+        LayerMask enemyLayer = LayerMask.GetMask("Enemy");
+        
+        Collider2D[] hitEnemies = Physics2D.OverlapBoxAll(attackPosition, attackSize, 0, enemyLayer);
+        
+        foreach (Collider2D enemy in hitEnemies)
+        {
+            Character character = enemy.GetComponent<Character>();
+            if (character != null)
+            {
+                character.TakeDamage(1f);
+            }
+        }
+        
         StartCoroutine(DisableSlashCollider());
+    }
+    
+    private void OnDrawGizmosSelected()
+    {
+        //可视化攻击区域，便于调试
+        Vector2 attackPosition = (Vector2)transform.position + (Vector2.right * transform.localScale.x * 1.0f);
+        Vector2 attackSize = new Vector2(1.5f, 1.5f);
+        Gizmos.color = Color.red;
+        Gizmos.DrawWireCube(attackPosition, attackSize);
     }
 
     IEnumerator DisableSlashCollider()
@@ -244,7 +270,8 @@ public class PlayerControl : MonoBehaviour
     {   
         //Debug.Log("Jump");
         if (landed && (isGrounded || coyoteTimeCounter > 0))
-        {
+        {   
+            rb.velocity = new Vector2(rb.velocity.x, 0);  
             rb.AddForce(Vector2.up * jumpForce, ForceMode2D.Impulse);
             coyoteTimeCounter = 0;
             isJumping = true;
@@ -256,8 +283,10 @@ public class PlayerControl : MonoBehaviour
     private void JumpTwice()
     {   
         if (Input.GetKeyDown(KeyCode.Space))
-        {
-            rb.AddForce(Vector2.up * (jumpForce - 3.5f), ForceMode2D.Impulse);
+        {   
+            rb.velocity = new Vector2(rb.velocity.x, 0); 
+            rb.AddForce(Vector2.up * jumpForce, ForceMode2D.Impulse);
+            //rb.AddForce(Vector2.up * (jumpForce - 3f), ForceMode2D.Impulse);
             coyoteTimeCounter = 0;
             Twice = true;
         }
@@ -307,13 +336,13 @@ public class PlayerControl : MonoBehaviour
         touchRightWall = Physics2D.OverlapCircle((Vector2)transform.position + rightOffset, checkRaduis, groundLayer);
     }
 
-    private void OnDrawGizmosSelected()
-    {
-        Gizmos.DrawWireSphere((Vector2)transform.position + leftOffset, checkRaduis);
-        Gizmos.DrawWireSphere((Vector2)transform.position + rightOffset, checkRaduis);
-
-        Gizmos.DrawWireSphere((Vector2)transform.position - new Vector2(0, 0.4f), 0.1f);
-    }
+    // private void OnDrawGizmosSelected()
+    // {
+    //     Gizmos.DrawWireSphere((Vector2)transform.position + leftOffset, checkRaduis);
+    //     Gizmos.DrawWireSphere((Vector2)transform.position + rightOffset, checkRaduis);
+    //
+    //     Gizmos.DrawWireSphere((Vector2)transform.position - new Vector2(0, 0.4f), 0.1f);
+    // }
 
     public void Stick()
     {
@@ -384,9 +413,25 @@ public class PlayerControl : MonoBehaviour
     {
         if(currentHealth == 0f)
         {   
-           //似乎没来得及加死亡时的效果
+            StartCoroutine(LoadAndRestartScene("Game"));
         }
     }
+
+    private IEnumerator LoadAndRestartScene(string sceneName)
+    {
+        //加载场景
+        AsyncOperation asyncLoad = SceneManager.LoadSceneAsync(sceneName);
+
+        //等待场景加载完成
+        while (!asyncLoad.isDone)
+        {
+            yield return null;
+        }
+
+        //恢复游戏时间
+        Time.timeScale = 1f;
+    }
+
     #endregion
 
     #region 角色交互
